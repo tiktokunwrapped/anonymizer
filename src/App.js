@@ -11,6 +11,10 @@ function App() {
 
   return (
     <div className="App">
+      <div>
+      <p>Please select and then anonymize a file using the interface below.</p>
+      <p>You will be able to inspect your anonymized file before deciding to save it to your local device or send it to us.</p>
+      </div>
 
       <div id = "FileSelect">
         <FileSelector fileStatus={fileStatus} updateStatus={setFileStatus} fileInfo={fileInfo} updateFile={setFileInfo}/>
@@ -94,11 +98,6 @@ function FileSelector(props) {
               <input id="fileSelect" type='file' name='tikTokFileZip' accept="application/zip" onChange={(e) => handleFileSelection(e, "zip")} onClick={resetInput} />
           </form>
       </div>
-
-      <div id='submission-box'>
-          <p>Filename: {props.fileInfo.fileName}</p>
-          
-      </div>
     </div> 
     )
 
@@ -129,56 +128,55 @@ function Anonymizer(props) {
 
 function Sender(props) {
 
-  // const send = () => {
-
-  // }
-    
-  //   fetch("http://127.0.0.1:5000/receive_anonymized_data", 
-  //     {
-  //       method: 'POST',
-  //       headers: {
-  //       'Content-type': 'application/json',
-  //       'Accept': 'application/json'
-  //       },
-  //       body:jsonToSend
-  //     }).then(res => {
-  //         if (res.ok) {
-  //           // display sent successfully!
-  //         } else {
-  //           alert("something is wrong... refresh and try again")
-  //         }
-  //     })
-  //   }
+  const [sending, setSending] = useState(false)
 
 
   let anonymizedTextArea = "";
+  let toSubmit = "placeholder";
   let downloadLink = null;
-  if (props.anonymizedFile) {
+  if (props.anonymizedFile && !sending) {
     let anonJsonText = JSON.stringify(props.anonymizedFile, undefined, 4)
     anonymizedTextArea = <pre style={{height: 200, overflow: 'scroll', 'textAlign': 'left'}}>
       {anonJsonText}
     </pre>
 
+    const dataUrl = URL.createObjectURL(new Blob([anonJsonText], {type:'text/plain'}));
     downloadLink =  <a
-            href={`data:text/json;charset=utf-8,${encodeURIComponent(anonJsonText)}`}
+            href={dataUrl}
             download="anonymized_tiktok_data.json"
           >
-            {`Download Anonymized File`}
+            {'Save data to local device'}
           </a>
-  }
 
+    toSubmit = JSON.stringify(props.anonymizedFile);  
 
-  
- 
-
-  return (
-    <div>
-      {anonymizedTextArea}
+    return (
       <div>
-        {downloadLink}
+        {/* <div> */}
+          {/* <form id="fs-frm" name="simple-contact-form" accept-charset="utf-8" action="https://formspree.io/f/mpzbjvdo" method="post" >
+            <fieldset id="fs-frm-inputs" hidden>
+            <label for="message" hidden></label>
+              <textarea rows="5" name="message" id="message" required="" value={toSubmit} hidden></textarea>
+              <input type="hidden" name="_subject" id="email-subject" value="Contact Form Submission" hidden></input>
+            </fieldset>
+          </form> */}
+        {/* </div> */}
+        <div style={{'display': 'inline'}}>
+          <button type="submit" value="Submit" form="fs-frm" onClick={(e) => {e.currentTarget.innerText = 'Sending... do not close'}}>Send data to secure server</button>
+          <button type="submit" value="Save Anonymized File" >{downloadLink}</button>
+        </div>
+        <div>
+          You can preview the anonymized file below before you decide to save it to your computer. (warning - it may be quite long, and may be slow on some browsers.)
+          {anonymizedTextArea}
+        </div>
       </div>
-    </div>
-  )
+    )
+
+  } else {
+    return (
+      <div> </div>
+    )
+  }
   
 }
 
